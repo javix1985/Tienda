@@ -1,0 +1,121 @@
+﻿@page "/ventas"
+@inject IRepositorio<Articulos> RepositorioArticulo
+@inject IRepositorio<Modelo_Abm_TipoProd> RepositorioTipoProd
+@inject IRepositorio<Modelo_Abm_Marca> RepositorioMarca
+@inject IRepositorio<Modelo_ModelodeProductos> RepositorioModelo
+@inject IRepositorio<ModeloVenta_Articulos> RepositorioVentaArticulo
+@using Tienda.Modelos
+@using Tienda.Repositorios
+@using System.Linq
+@using Tienda.Data
+@using Microsoft.AspNetCore.Components.Forms
+
+
+@*<EditForm Model="VentaArticulo" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputSelect @bind-Value="VentaArticulo.Articulo_Id" @onchange="ActualizarArticuloSeleccionado">
+        <option value="">Selecciona un artículo</option>
+        @foreach (var articulo in Articulos)
+        {
+            <option value="@articulo.id">@articulo.descripcion</option>
+        }
+    </InputSelect>
+
+    <p>Marca: @ArticuloSeleccionado?.marca_id</p>
+    <p>Modelo: @ArticuloSeleccionado?.modelo_id</p>
+    <p>Precio: @ArticuloSeleccionado?.precio</p>
+    <p>Stock disponible: @ArticuloSeleccionado?.stock</p>
+
+    <InputNumber @bind-Value="VentaArticulo.cantidad" @oninput="CalcularTotal" />
+
+    <p>Total: @VentaArticulo.total</p>
+
+    <button type="submit">Vender</button>
+</EditForm>*@
+
+<EditForm Model="VentaArticulo" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputSelect @bind-Value="VentaArticulo.Articulo_Id" @onchange="ActualizarArticuloSeleccionado">
+        <option value="">Selecciona un artículo</option>
+        @foreach (var articulo in Articulos)
+        {
+            <option value="@articulo.id">@articulo.descripcion</option>
+        }
+    </InputSelect>
+
+    <p>Marca: @MarcaSeleccionada</p>
+    <p>Modelo: @ModeloSeleccionado</p>
+    <p>Precio: @ArticuloSeleccionado?.precio</p>
+    <p>Stock disponible: @ArticuloSeleccionado?.stock</p>
+
+    
+    <InputNumber @bind-Value="VentaArticulo.cantidad" @onchange="CalcularTotal" />
+
+    <p>Total: @VentaArticulo.total</p>
+
+    <button type="submit">Vender</button>
+</EditForm>
+
+
+@code {
+    private string MarcaSeleccionada;
+    private string ModeloSeleccionado;
+    private List<Articulos> Articulos = new List<Articulos>();
+    private Articulos ArticuloSeleccionado;
+
+    private List<Modelo_Abm_TipoProd> TiposProd;
+    private List<Modelo_Abm_Marca> Marcas;
+    private List<Modelo_ModelodeProductos> Modelos;
+    private ModeloVenta_Articulos VentaArticulo = new ModeloVenta_Articulos();
+
+    protected override async Task OnInitializedAsync()
+    {
+        Articulos = (await RepositorioArticulo.ObtenerTodosAsync()).ToList();
+        TiposProd = (await RepositorioTipoProd.ObtenerTodosAsync()).ToList();
+        Marcas = (await RepositorioMarca.ObtenerTodosAsync()).ToList();
+        Modelos = (await RepositorioModelo.ObtenerTodosAsync()).ToList();
+    }
+
+    private void ActualizarArticuloSeleccionado(ChangeEventArgs e)
+    {
+        var idArticulo = int.Parse(e.Value.ToString());
+        ArticuloSeleccionado = Articulos.Find(a => a.id == idArticulo);
+        VentaArticulo.precio = ArticuloSeleccionado.precio;
+
+       
+        var marca = Marcas.Find(m => m.id == ArticuloSeleccionado.marca_id);
+        var modelo = Modelos.Find(m => m.id == ArticuloSeleccionado.modelo_id);
+
+        
+        MarcaSeleccionada = marca != null ? marca.Marca : "";
+        ModeloSeleccionado = modelo != null ? modelo.Modelo : "";
+    }
+
+    
+
+    private void CalcularTotal(ChangeEventArgs e)
+    {
+        var cantidad = int.Parse(e.Value.ToString());
+        VentaArticulo.total = VentaArticulo.precio * cantidad;
+    }
+
+
+    private async Task HandleValidSubmit()
+    {
+        var articulo = Articulos.Find(a => a.id == VentaArticulo.Articulo_Id);
+        if (articulo != null && articulo.stock >= VentaArticulo.cantidad)
+        {
+            articulo.stock -= VentaArticulo.cantidad;
+            await RepositorioArticulo.ActualizarAsync(articulo);
+
+            await RepositorioVentaArticulo.AgregarAsync(VentaArticulo);
+
+            VentaArticulo = new ModeloVenta_Articulos();
+            ArticuloSeleccionado = null;
+        }
+    }
+}

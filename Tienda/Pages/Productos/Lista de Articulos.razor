@@ -1,0 +1,55 @@
+﻿@page "/listar-articulos"
+@inject IRepositorio<Articulos> RepositorioArticulo
+@using Tienda.Modelos
+@using Tienda.Repositorios
+@using Tienda.Data
+@using Microsoft.AspNetCore.Components
+
+
+@if (Articulos == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Descripción</th>
+                <th>Stock</th>
+                <th>Precio</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var articulo in Articulos)
+            {
+                <tr>
+                    <td>@articulo.descripcion</td>
+                    <td>@articulo.stock</td>
+                    <td>@articulo.precio</td>
+                    <td>
+                        <button class="btn btn-danger" @onclick="() => EliminarArticulo(articulo.id)">Eliminar</button>
+                        @*<NavigationLink href="editar-articulo/@articulo.id" class="btn btn-success">Editar</NavigationLink>*@
+                        <a href="editar-articulo/@articulo.id" class="btn btn-success btn-sm"><span class="oi oi-plus" aria-hidden="true"></span> Editar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Articulos> Articulos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Articulos = (await RepositorioArticulo.ObtenerTodosAsync()).ToList();
+    }
+
+    private async Task EliminarArticulo(int id)
+    {
+        await RepositorioArticulo.EliminarAsync(id);
+        Articulos = (await RepositorioArticulo.ObtenerTodosAsync()).ToList();
+    }
+}

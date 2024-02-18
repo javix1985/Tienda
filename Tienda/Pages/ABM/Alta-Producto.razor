@@ -1,0 +1,33 @@
+﻿@page "/alta-producto"
+@using Tienda.Modelos
+@using Tienda.Repositorios
+@inject IRepositorio<Modelo_Abm_TipoProd> RepositorioProducto
+
+
+
+<h3>Alta_Producto</h3>
+
+
+<EditForm Model="nuevoProducto" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="TipoProd">Tipo de Prod. :</label>
+        <InputText id="TipoProd" class="form-control" @bind-Value="nuevoProducto.TipoProd" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Agregar Tipo de Producto</button>
+</EditForm>
+
+
+@code {
+    private Modelo_Abm_TipoProd nuevoProducto = new Modelo_Abm_TipoProd();
+
+    private async Task HandleValidSubmit()
+    {
+        await RepositorioProducto.AgregarAsync(nuevoProducto);
+        nuevoProducto = new Modelo_Abm_TipoProd(); // Limpiar el formulario
+    }
+
+}

@@ -1,0 +1,66 @@
+﻿@page "/editar-articulo/{id}"
+@inject IRepositorio<Articulos> RepositorioArticulo
+@inject IRepositorio<Modelo_Abm_TipoProd> RepositorioProducto
+@inject IRepositorio<Modelo_Abm_Marca> RepositorioMarca
+@using Tienda.Modelos
+@using Tienda.Repositorios
+@using Tienda.Data
+@using System.Linq
+@using Microsoft.AspNetCore.Components
+@inject NavigationManager NavigationManager
+
+<EditForm Model="ArticuloEditar" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <InputSelect @bind-Value="ArticuloEditar.tipo_prod_id">
+        @foreach (var tipoProd in TiposProd)
+        {
+            <option value="@tipoProd.id">@tipoProd.TipoProd</option>
+        }
+    </InputSelect>
+
+    <InputSelect @bind-Value="ArticuloEditar.marca_id">
+        @foreach (var marca in Marcas)
+        {
+            <option value="@marca.id">@marca.Marca</option>
+        }
+    </InputSelect>
+
+    <InputText @bind-Value="ArticuloEditar.descripcion" />
+    <InputNumber @bind-Value="ArticuloEditar.stock" />
+    <InputNumber @bind-Value="ArticuloEditar.precio" />
+
+    <button type="submit">Guardar</button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public string id { get; set; }
+
+    private Articulos ArticuloEditar = new Articulos();
+    private List<Modelo_Abm_TipoProd> TiposProd = new List<Modelo_Abm_TipoProd>();
+    private List<Modelo_Abm_Marca> Marcas = new List<Modelo_Abm_Marca>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        TiposProd = (await RepositorioProducto.ObtenerTodosAsync()).ToList();
+        Marcas = (await RepositorioMarca.ObtenerTodosAsync()).ToList();
+
+        int articuloId;
+        if (int.TryParse(id, out articuloId))
+        {
+            var articulo = await RepositorioArticulo.ObtenerPorIdAsync(articuloId);
+            if (articulo != null)
+            {
+                ArticuloEditar = articulo;
+            }
+        }
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await RepositorioArticulo.ActualizarAsync(ArticuloEditar);
+        NavigationManager.NavigateTo("/listar-articulos");
+    }
+}

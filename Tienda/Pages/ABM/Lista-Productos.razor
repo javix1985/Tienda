@@ -1,0 +1,53 @@
+﻿@page "/lista-productos"
+@inject IRepositorio<Modelo_Abm_TipoProd> RepositorioProducto
+@using Tienda.Modelos
+@using Tienda.Repositorios
+@inject NavigationManager NavigationManager
+
+
+
+<h3>Lista_Productos</h3>
+
+@if (productos == null)
+{
+    <p><em>Cargando...</em></p>
+    }
+    else{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Productos</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var producto in productos)
+            {
+                <tr>
+                    <td>@producto.TipoProd</td>
+                    <td>
+                        <a href="editar-producto/@producto.id" class="btn btn-success btn-sm"><span class="oi oi-plus" aria-hidden="true"></span> Editar</a>
+                        <button class="btn btn-danger" @onclick="() => EliminarProducto(producto.id)">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+    private List<Modelo_Abm_TipoProd> productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = (await RepositorioProducto.ObtenerTodosAsync()).ToList();
+    }
+
+    private async Task EliminarProducto(int id)
+    {
+        await RepositorioProducto.EliminarAsync(id);
+        productos = (await RepositorioProducto.ObtenerTodosAsync()).ToList();
+    }
+
+}

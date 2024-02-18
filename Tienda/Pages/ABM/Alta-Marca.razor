@@ -1,0 +1,28 @@
+﻿@page "/alta-marca"
+@using Tienda.Modelos
+@using Tienda.Repositorios
+@inject IRepositorio<Modelo_Abm_Marca> RepositorioMarca
+
+<h3>Alta de Marca</h3>
+
+<EditForm Model="nuevaMarca" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="Marca">Marca:</label>
+        <InputText id="Marca" class="form-control" @bind-Value="nuevaMarca.Marca" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Agregar Marca</button>
+</EditForm>
+
+@code {
+    private Modelo_Abm_Marca nuevaMarca = new Modelo_Abm_Marca();
+
+    private async Task HandleValidSubmit()
+    {
+        await RepositorioMarca.AgregarAsync(nuevaMarca);
+        nuevaMarca = new Modelo_Abm_Marca(); // Limpiar el formulario
+    }
+}

@@ -1,0 +1,68 @@
+﻿@page "/crear-articulo"
+@inject IRepositorio<Modelo_Abm_TipoProd> RepositorioProducto
+@inject IRepositorio<Modelo_Abm_Marca> RepositorioMarca
+@inject IRepositorio<Articulos> RepositorioArticulo
+@using Tienda.Modelos
+@using Tienda.Repositorios
+@using Tienda.Data
+@using System.Linq
+
+<EditForm Model="NuevoArticulo" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div>
+        <label for="tipo_prod_id">Tipo de Producto</label>
+        <InputSelect id="tipo_prod_id" @bind-Value="NuevoArticulo.tipo_prod_id">
+            @foreach (var tipoProd in TiposProd)
+            {
+                <option value="@tipoProd.id">@tipoProd.TipoProd</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div>
+        <label for="marca_id">Marca</label>
+        <InputSelect id="marca_id" @bind-Value="NuevoArticulo.marca_id">
+            @foreach (var marca in Marcas)
+            {
+                <option value="@marca.id">@marca.Marca</option>
+            }
+        </InputSelect>
+    </div>
+
+    <div>
+        <label for="descripcion">Descripción</label>
+        <InputText id="descripcion" @bind-Value="NuevoArticulo.descripcion" />
+    </div>
+
+    <div>
+        <label for="stock">Stock</label>
+        <InputNumber id="stock" @bind-Value="NuevoArticulo.stock" />
+    </div>
+
+    <div>
+        <label for="precio">Precio</label>
+        <InputNumber id="precio" @bind-Value="NuevoArticulo.precio" />
+    </div>
+
+    <button type="submit">Crear</button>
+</EditForm>
+
+@code {
+    private Articulos NuevoArticulo = new Articulos();
+    private List<Modelo_Abm_TipoProd> TiposProd = new List<Modelo_Abm_TipoProd>();
+    private List<Modelo_Abm_Marca> Marcas = new List<Modelo_Abm_Marca>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        TiposProd = (await RepositorioProducto.ObtenerTodosAsync()).ToList();
+        Marcas = (await RepositorioMarca.ObtenerTodosAsync()).ToList();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await RepositorioArticulo.AgregarAsync(NuevoArticulo);
+        NuevoArticulo = new Articulos(); // Refresca el formulario
+    }
+}

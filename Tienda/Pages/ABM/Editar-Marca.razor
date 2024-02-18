@@ -1,0 +1,46 @@
+﻿@page "/editar-marca/{Id}"
+@inject IRepositorio<Modelo_Abm_Marca> RepositorioMarca
+@using Tienda.Modelos
+@using Tienda.Repositorios
+@inject NavigationManager NavigationManager
+
+<h3>Editar Marca</h3>
+
+@if (marca == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <EditForm Model="marca" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="Marca">Marca</label>
+            <InputText id="Marca" class="form-control" @bind-Value="marca.Marca" />
+            <ValidationMessage For="@(() => marca.Marca)" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+
+    private Modelo_Abm_Marca marca;
+
+    protected override async Task OnInitializedAsync()
+    {
+        int id = int.Parse(Id);
+        marca = await RepositorioMarca.ObtenerPorIdAsync(id);
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        await RepositorioMarca.ActualizarAsync(marca);
+        NavigationManager.NavigateTo("/lista-marcas");
+    }
+}

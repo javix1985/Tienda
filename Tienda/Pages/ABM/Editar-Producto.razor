@@ -1,0 +1,53 @@
+﻿@page "/editar-producto/{Id}"
+@inject IRepositorio<Modelo_Abm_TipoProd> RepositorioProducto
+@using Tienda.Modelos
+@using Tienda.Repositorios
+@inject NavigationManager NavigationManager
+
+
+<h3>Editar_Producto</h3>
+
+@if (producto == null)
+{
+    <p><em> ...Cargando </em></p>
+}
+
+else
+{
+
+
+
+    <EditForm Model="producto" OnValidSubmit="HandleValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="form-group">
+            <label for="TipoProd">Tipo de Producto</label>
+            <InputText id="TipoProd" class="form-control" @bind-Value="producto.TipoProd" />
+            <ValidationMessage For="@(() => producto.TipoProd)" />
+            </div>
+            <button type="submit" class="btn btn-primary">Guardar</button>
+            </EditForm>
+
+
+
+
+}
+
+
+@code {
+    [Parameter]
+    public string Id { get; set; }
+    private Modelo_Abm_TipoProd producto;
+    protected override async Task OnInitializedAsync()
+    {
+        int id = int.Parse(Id);
+        producto = await RepositorioProducto.ObtenerPorIdAsync(id);
+    }
+    private async Task HandleValidSubmit()
+    {
+        await RepositorioProducto.ActualizarAsync(producto);
+        NavigationManager.NavigateTo("/lista-productos");
+    }
+
+}

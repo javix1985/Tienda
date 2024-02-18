@@ -1,0 +1,57 @@
+﻿@page "/lista-marcas"
+@inject IRepositorio<Modelo_Abm_Marca> RepositorioMarca
+@using Tienda.Modelos
+@using Tienda.Repositorios
+@inject NavigationManager NavigationManager
+
+
+
+<h3>Lista de Marcas</h3>
+
+@if (marcas == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Marca</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var marca in marcas)
+            {
+                <tr>
+                    <td>@marca.Marca</td>
+                    <td>
+                        
+                        <a href="editar-marca/@marca.id" class="btn btn-success btn-sm"><span class="oi oi-plus" aria-hidden="true"></span> Editar</a>
+
+                        <button class="btn btn-danger" @onclick="() => EliminarMarca(marca.id)">Eliminar</button>
+                    </td>
+           
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Modelo_Abm_Marca> marcas;
+
+    protected override async Task OnInitializedAsync()
+    {
+        marcas = (await RepositorioMarca.ObtenerTodosAsync()).ToList();
+    }
+
+    
+
+    private async Task EliminarMarca(int id)
+    {
+        await RepositorioMarca.EliminarAsync(id);
+        marcas = (await RepositorioMarca.ObtenerTodosAsync()).ToList();
+    }
+}
